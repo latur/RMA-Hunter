@@ -1,0 +1,104 @@
+const express = require('express');
+const parser  = require('body-parser');
+const exec    = require('child_process').exec;
+
+const app     = express();
+const server  = require('http').createServer(app);
+const fs      = require('fs');
+const genes   = require('./genes.js').e;
+
+/*
+echo "exports.e = {" $(
+  echo $(
+   cat public/data/SDF_S2.csv | \
+    awk -F  "," {'print $6'} | sort | uniq | \
+    awk '{print "\""$1"\":true"}'
+  ) | sed 's/ /,/g'
+) "}" > exec/genes.js
+*/
+
+/* -------------------------------------------------------------------------- */
+
+var port = parseInt(process.argv[2]);
+server.listen(port);
+
+app.use(express.static('public'));
+app.use(parser.urlencoded({extended : true, limit: '500mb'}));
+
+/* -------------------------------------------------------------------------- */
+app.post('/upload', (req, res) => {
+    // Демонстрашка
+    if (req.body.types == 'demo')
+    {
+        setTimeout(function(){
+            res.send(JSON.stringify(['demo', [61,2,0]]));
+        }, 2 * 1000);
+        return ;
+    }
+
+	// Загрузка пользовательского ввода
+	var vcf_str = req.body.vcf || '';
+	var bed_str = req.body.bed || '';
+
+    // Распаковаваем, что пришло
+	var vcf = '';
+	vcf_str.split('!').map(function(chr_box){
+		var blocks = chr_box.split('$'), last = 0;
+		var chr = parseInt(blocks[0].replace('X', 23).replace('Y', 24))
+		if (chr == 0) return false;
+		vcf[chr] = {};
+		blocks.splice(1).map(function(block){
+			var tmp = block.split('@');
+			var d3  = tmp[3].split(',');
+			last += parseInt(tmp[0], 32);
+			for (var d in d3){
+    			vcf += [chr, last, tmp[2], d3[d], parseInt(tmp[1])].join('\t');
+    			vcf += '\n';
+			}
+		});
+	});
+
+	var bed = '';
+	bed_str.split('!').map(function(chr_box){
+		var blocks = chr_box.split('$'), last = 0;
+		var chr = parseInt(blocks[0].replace('X', 23).replace('Y', 24))
+		if (chr == 0) return;
+		bed[chr] = [];
+		blocks.splice(1).map(function(block){
+			var tmp = block.split('@');
+			last += parseInt(tmp, 32);
+    		bed += [chr, last, last + parseInt(tmp[1], 32)].join('\t');
+    		bed += '\n';
+		});
+	});
+
+    // Кладём локально во временные файлы
+    var key = 'E' + Math.random().toString(36).substring(2).toUpperCase();
+    fs.writeFileSync('/tmp/' + key + '.xvcf', vcf);
+    fs.writeFileSync('/tmp/' + key + '.xbed', bed);
+
+	var tpx = ['A','C','AB','ABCD'].indexOf(req.body.types);
+
+    // Обсчёт + разбиение на страницы
+    var argv = ['./exec/app.sh', key, tpx == -1 ? 0 : tpx].join(' ');
+    exec(argv, function callback(error, stdout, stderr) {
+        res.send(JSON.stringify([key, stdout.replace('\n', '').split(' ')]));
+    });
+});
+
+app.post('/genes', (req, res) => {
+	// Фильтруем файл по исходному ключу и выписываем новый в ответ
+	var key_src = req.body.key || '';
+	var gsx = JSON.parse(req.body.genes || '[]').filter(function(g){
+    	return genes[g] && g != '';
+	}).map(function(g){
+    	return ',' + g + ','; 
+	}).join('|');
+
+    var new_key = 'EG' + Math.random().toString(36).substring(2).toUpperCase();
+    var argv = ['./exec/filter.sh', key_src, '"' + gsx + '"', new_key].join(' ');
+    console.log(argv)
+    exec(argv, function callback(error, stdout, stderr) {
+        res.send(JSON.stringify([new_key, stdout.replace('\n', '').split(' ')]));
+    });
+});
