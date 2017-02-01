@@ -42,5 +42,5 @@ npm install
 tar -zxvf SDF_S2.tar.gz
 
 chmod +x ./exec/*.sh
-forever start ./exec/server.js 80
+forever start ./exec/hunter.js 80
 ~~~

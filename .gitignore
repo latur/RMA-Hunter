@@ -3,3 +3,4 @@ node_modules/*
 public/data/Supplementary_Data_Files.tar.gz
 public/data/SDF_S2.csv
 public/res/E*
+_*
