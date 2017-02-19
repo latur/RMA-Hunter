@@ -62,7 +62,8 @@
     <div class="template" id="table">
         <div class="table" id="t`id`">
             <div class="head">
-                <p>`header` <span class="count" id="ct`id`">∞</span></p>
+                <p class="title">`header` <span class="count" id="ct`id`">∞</span></p>
+                <p class="desc">`desc`</p>
                 <svg class="open-pane animate" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                     <path d="M7.41 7.84L12 12.42l4.59-4.58L18 9.25l-6 6-6-6z"/>
                 </svg>
@@ -83,9 +84,9 @@
                             <th rowspan="2" width="4%">GT</th>
                         </tr>
                         <tr>
-                            <th width="10%">SIFT</th>
                             <th width="10%">PROVEAN</th>
                             <th width="10%">Polyphen2</th>
+                            <th width="10%">SIFT</th>
                             <th width="7%">1000G</th>
                             <th width="7%">ExAC</th>
                             <th width="7%">ESP</th>
@@ -133,20 +134,11 @@
         <table>
         <tbody id="row">
         <tr class="tr">
-            <td>`0`</td>
-            <td>`1`</td>
-            <td>`2`</td>
-            <td>`3`</td>
-            <td>`4`</td>
-            <td>`5`</td>
-            <td>`6`</td>
-            <td><span class="pr">`8` </span> <span class="pr-score">`11`</span></td>
-            <td><span class="pr">`9` </span> <span class="pr-score">`12`</span></td>
-            <td><span class="pr">`10`</span> <span class="pr-score">`13`</span></td>
-            <td>`14`</td>
-            <td>`15`</td>
-            <td>`16`</td>
-            <td>`17`</td>
+            <td>`0`</td><td>`1`</td><td>`2`</td><td>`3`</td><td>`4`</td><td>`5`</td><td>`7`</td>
+            <td><span class="pr">`15`</span> <span class="pr-score">`14`</span></td>
+            <td><span class="pr">`17`</span> <span class="pr-score">`16`</span></td>
+            <td><span class="pr">`19`</span> <span class="pr-score">`18`</span></td>
+            <td>`9`</td><td>`10`</td><td>`11`</td><td>`21`</td>
         </tr>
         </tbody>
         </table>
@@ -174,7 +166,10 @@
         </div>
     </div>
     <div class="tables" id="result">
-        <p class="spec-set"><a id="gset-open" href="#">Analyze specific gene set<span id="gset-count"></span></a></p>
+        <p class="spec-set">
+            <a id="gset-open" href="#">Analyze specific gene set<span id="gset-count"></span></a>
+            <a id="go-back" href="/">&larr; return back (reset all)</a>
+        </p>
         <div id="result-tables"></div>
     </div>
 
@@ -213,17 +208,17 @@
                 <p>Correct variants:</p>
                 <div class="pane disable">
                     <div class="animate box">
-                        <button id="prc_A" class="shadow btn prc">Rare + coding</button>
+                        <div class="btn-box">
+                            <input type="checkbox" id="coding" checked />
+                            <label for="coding">Coding only</label>
+                        </div>
                     </div>
                     <div class="animate box">
-                        <button id="prc_AB" class="shadow btn prc">Coding</button>
+                        <input type="text" id="maxafs" class="form-c ref-afs" value="0.1" />
+                        <div class="inf">Max RefAFs</div>
                     </div>
-                    <div class="animate box">
-                        <button id="prc_AC" class="shadow btn prc">Rare</button>
-                    </div>
-                    <div class="animate box">
-                        <button id="prc_ABCD" class="shadow btn prc">All RMA</button>
-                        <div class="inf">Takes a lot of time!</div>
+                    <div class="animate box box2">
+                        <button id="run" class="shadow btn prc">Run</button>
                     </div>
                 </div>
             </div>

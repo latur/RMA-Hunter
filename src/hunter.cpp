@@ -1,38 +1,41 @@
 #include <iostream>
 #include <fstream>
 #include <unistd.h>
-#include "structs.h"
+#include <stdlib.h>
+#include "hunter.h"
 
-int main(int argc, char *argv[]){
+int main(int argc, char *argv[])
+{
     using namespace std;
     
-    string key = argv[1];
-    char * tpx = argv[2];
-    string sdf = argv[3];
-    string res = argv[4];
+    string key = argv[1]; // filename
+    char * tpx = argv[2]; // coding/n
+    string sdf = argv[3]; // supplementary data file
+    string res = argv[4]; // base dir
+    double afs = strtod(argv[5], NULL); // max ref afs
 
+    ifstream sdfs(sdf);
     container<vcfline> vcf_file("/tmp/" + key + ".xvcf");
     container<bedline> bed_file("/tmp/" + key + ".xbed");
+    
+    bool bed_loaded = (bed_file.total() > 0);
+
+    ofstream tbl1(res + key + ".t1");
+    ofstream tbl2(res + key + ".t2");
+    ofstream tbl3(res + key + ".t3");
 
     sdfline s;
-    ifstream sdfs(sdf);
-
-    ofstream ofs1(res + key + ".t1");
-    ofstream ofs2(res + key + ".t2");
-    ofstream ofs3(res + key + ".t3");
-
-    bool bed_loaded = bed_file.total() > 0;
-    
     while (sdfs >> s)
     {
-        // Только выбранный класс интересует нас
-        // tpx = 'A','C','AB','ABCD'
+        // Только выбранный класс интересует нас (only coding? = 1)
+        // tpx = '1','0'
         if (s.chr == -1) continue;
-        if (tpx[0] == '0' && s.e[20] != "A") continue;
-        if (tpx[0] == '1' && s.e[20] != "C") continue;
-        if (tpx[0] == '2' && !(s.e[20] == "A" || s.e[20] == "B")) continue;
+        if (tpx[0] == '1' && s.e[20] == "NO") continue;
+        if (s.maxafs > afs) continue;
 
         // Проверка, есть ли точка в интервалах BED
+        // Тут можно мою любимую корневую декомпозицию позже замутить для скорости
+        // или или ещё что похитрее, дерево отрезков, например (слишком много памяти отожрёт)
         if (bed_loaded)
         {
             bool in_bed = false;
@@ -62,60 +65,48 @@ int main(int argc, char *argv[]){
             }
         } catch (...){}
         
-        // 0.
-        // Все, что находится в файле юзера (и в последней колонке генотип 1/1)
-        // и не имеет в референсном файле флага "FALSE_SYNONYM" просто выкидывается
-        if (s.e[21] != "FALSE_SYNONYM" && zyg == 1) continue;
-
         // 1.
-        // Все из выбранного класса (в файле SDF_S2.csv),
-        // что не находится в файле юзера сохраняется в список 1 (c генотипом ./.)
-        if (s.e[21] != "FALSE_SYNONYM" && zyg == -1)
+        // Что не находится в файле юзера сохраняется в список 1 c генотипом ./.
+        if (zyg == -1)
         {
-            s.e[22] = "./.";
-            ofs1 << s;
+            s.e[21] = "./.";
+            tbl1 << s;
         }
 
         // 2.
-        // Все из выбранного класса (в файле SDF_S2.csv),
-        // что находится в файле юзера в зиготности 0/0
-        // сохраняется в список 2 (дальше этому классу соответствует генотип 1/1).
-        if (s.e[21] != "FALSE_SYNONYM" && zyg == 3)
+        // Что находится в файле юзера в зиготности 0/0
+        // сохраняется в список 1 (изменяем зиготность 1/1, помечаем)
+        if (zyg == 3)
         {
-            s.e[22] = "0/0";
-            s.e[23] = "*";
-            ofs1 << s;
+            s.e[21] = "1/1";
+            s.e[22] = "*";
+            tbl1 << s;
         }
 
         // 3.
-        // Все, что находится в формате 0/1 (в файле юзера)
-        // из выбранного класса (в нашем файле) сохраняется в список 3 (0/1).
-        if (s.e[21] != "FALSE_SYNONYM" && zyg == 2)
+        // Что находится в файле юзера в зиготности 0/1
+        // сохраняется в список 1 (оставляем зиготность 0/1)
+        if (zyg == 2)
         {
-            s.e[22] = "0/1";
-            ofs2 << s;
+            s.e[21] = "0/1";
+            tbl1 << s;
         }
 
         // 4.
-        // Все, что нашлось в файле юзера из выбранного класса с флагом "FALSE_SYNONYM"
-        // нужно сохранить в список 4 (зиготность из файла as-is).
-        if (s.e[21] == "FALSE_SYNONYM" && zyg != -1)
-        {
-            ofs3 << s;
-        }
+        // Работаем со всторым файлом ...
     }
     
-    ofs1.close();
-    ofs2.close();
-    ofs3.close();
+    tbl1.close();
+    tbl2.close();
+    tbl3.close();
 
-    // while (true) sleep(10);
     return 0;
 }
 
-/**
+/*
 
 g++ -Werror -Wall -std=c++11 src/hunter.cpp -o exec/hunter
 valgrind ./exec/hunter EFYKSHHXTP7Y3Z0K9 0
+g++ -g -std=c++11 src/hunter.cpp -o exec/hunter
 
 */

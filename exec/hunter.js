@@ -36,6 +36,10 @@ app.post('/upload', (req, res) => {
         return ;
     }
 
+    var coding = req.body.coding == 1 ? '1' : '0';
+    var maxafs = parseFloat(req.body.maxafs);
+    if (isNaN(maxafs)) maxafs = 0.5;
+
 	// Загрузка пользовательского ввода
 	var vcf_str = req.body.vcf || '';
 	var bed_str = req.body.bed || '';
@@ -77,10 +81,8 @@ app.post('/upload', (req, res) => {
     fs.writeFileSync('/tmp/' + key + '.xvcf', vcf);
     fs.writeFileSync('/tmp/' + key + '.xbed', bed);
 
-	var tpx = ['A','C','AB','ABCD'].indexOf(req.body.types);
-
     // Обсчёт + разбиение на страницы
-    var argv = ['./exec/app.sh', key, tpx == -1 ? 0 : tpx].join(' ');
+    var argv = ['./exec/app.sh', key, coding, maxafs].join(' ');
     exec(argv, function callback(error, stdout, stderr) {
         res.send(JSON.stringify([key, stdout.replace('\n', '').split(' ')]));
     });

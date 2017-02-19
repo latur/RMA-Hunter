@@ -1,15 +1,20 @@
 #!/bin/bash
 key=$1
-tpx=$2
+coding=$2
+maxref=$3
 
-./exec/hunter $key $tpx "public/data/SDF_S2.csv" "public/res/"
-cd ./public/res/
+sdf="public/data/sdf.v2.csv"
+base="public/res/"
+./exec/hunter $key $coding $sdf $base $maxref
+cd $base
 
 echo $(
   for i in 1 2 3; do
     cat $key.t$i | sort | awk {'print $2'} > $key.ts$i
-    split --lines=30 -a3 -d $key.ts$i $key.ts$i.p
+    split -l 30 -a3 -d $key.ts$i $key.ts$i.p
     [[ -f $key.ts$i.p000 ]] || touch $key.ts$i.p000 
     cat $key.ts$i | wc -l
   done
 )
+
+find ./public/res/E* -mtime +1 -delete

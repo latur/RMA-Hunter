@@ -1,4 +1,5 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
+label { user-select: none; }
 
 body {
     font: 14px 'Segoe UI','DejaVu Sans',Helvetica,'Trebuchet MS',Arial,sans-serif;
@@ -68,25 +69,28 @@ h1 {
 	margin-bottom: 8px;
 }
 .upload {
-	width: 280px;
+    margin: 0 -5px;
+	width: 380px;
 	float: left;
 }
 .upload .box {
-	width: 135px;
-	margin-right: 5px;
+	width: 50%;
+	padding: 0 5px;
+	float: left;
 }
 .correct {
+    margin: 0 -5px;
 	float: right;
-	width: 480px;
+	width: 380px;
 }
 .correct .box {
-	width: 115px;
-	margin-left: 5px;
+	width: 33.333%;
+	padding: 0 5px;
 }
 
 svg.next {
 	margin: 30px auto 0 auto;
-	width: 40px;
+	width: 60px;
 	display: block;
 	color: #F00;
 }
@@ -147,8 +151,15 @@ table td {
 .table .head {
 	cursor: pointer;
 	position: relative;
-	line-height: 25px;
-	padding: 5px 12px;
+	padding: 8px 12px;
+}
+.table .head .title {
+    margin-bottom: 5px;
+}
+.table .head .desc {
+    line-height: 18px;
+    color: #444;
+    font-size: 95%;
 }
 .table .body {
 	background: #fcfcfc;
@@ -215,7 +226,13 @@ table tr:hover .pr-score {
 	cursor: pointer;
     text-decoration: none;
     border-bottom: 1px dashed;
-    margin: 12px;
+    margin: 0 12px;
+}
+#gset-open {
+    float: right;
+}
+#go-back {
+    
 }
 
 @media (max-width: 1420px) {
@@ -241,7 +258,7 @@ table tr:hover .pr-score {
 	display: none;
 	z-index: 60;
 	position: absolute; 
-	left: 200px;
+	left: 500px;
 	top: 200px;
 	width: 420px;
 	min-height: 120px;
@@ -355,6 +372,22 @@ table tr:hover .pr-score {
 	box-shadow: inset 0 2px 8px 0 rgba(0,0,0,0.3) !important;
 }
 
+.btn-box {
+	border-radius: 5px;
+	width: 100%;
+	margin: auto;
+	display: block;
+	padding: 10px 0;
+	background: #f7f7f7;
+    text-align: center;
+}
+
+.ref-afs {
+    margin-bottom: 0;
+    height: 36px;
+    border-radius: 5px;
+    text-align: center;
+}
 
 .disable .btn, 
 .disable .input-btn + label,

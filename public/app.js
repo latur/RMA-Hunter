@@ -54,160 +54,164 @@ var onpage = 30;
 /* -------------------------------------------------------------------------- */
 $('result-tables').innerHTML += Tpl('table', {
     'id' : 1,
-    'header' : 'Potentially important variants not called in your sample or found reference homozygous: '
+    'header' : 'Important variants: ',
+    'desc' : 'Ut eget blandit risus. Fusce ex neque, commodo sit amet tempor quis, viverra quis arcu. In suscipit pharetra urna sed venenatis. Sed eget eleifend nisl. Quisque ut urna interdum, blandit arcu id, tristique quam. In laoreet justo velit, id mattis nunc efficitur ut. Maecenas sit amet cursus urna. Pellentesque sit amet dolor consectetur, tincidunt diam vel, mollis neque.'
 });
+
 $('result-tables').innerHTML += Tpl('table', {
     'id' : 2,
-    'header' : 'Potentially important variants found heterozygous in your sample: '
+    'header' : 'T2',
+    'desc' : 'Phasellus non risus nisi. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Pellentesque et ligula in ligula faucibus varius. Sed maximus arcu quis lorem interdum scelerisque. Quisque placerat dui velit, nec porttitor sapien faucibus vel.'
 });
 $('result-tables').innerHTML += Tpl('table', {
     'id' : 3,
-    'header' : 'Potentially important falsely synonymous variants found in your sample: '
+    'header' : 'T3',
+    'desc' : 'Maecenas ac quam quis mi sollicitudin finibus non vitae lectus. Praesent facilisis lacinia tellus sit amet maximus. Morbi non laoreet nibh, nec interdum urna. Aliquam semper metus a metus egestas ornare. Duis faucibus odio ornare, sodales ante vitae, volutpat leo.'
 });
 
 
-Array.prototype.forEach.call( document.getElementsByClassName( 'prc' ), function( btn ){
-    btn.addEventListener( 'click', function(e){
-        //$('body').style.backgroundColor = '#FFF';
-        
-        if (process_init) return ;
-        var types = btn.id.split('_')[1];
-        if (!Object.keys(VCF).length && types != 'demo') return ;
+$('run').addEventListener('click', function(e) {
+    if (process_init) return ;
+    if (!Object.keys(VCF).length) return ;
 
-        process_init = true;
-        document.getElementsByClassName( 'main' )[0].classList.add('disable');
-        Log('Hunting. Class list: ' + types + ', please wait!');
+    process_init = true;
 
-        setTimeout(function(){
-            var q = 'types=' + types, data = [];
-            for (var chr in VCF) 
+    document.getElementsByClassName( 'main' )[0].classList.add('disable');
+    Log('Hunting. Please wait!');
+
+    var q = '';
+    q += 'maxafs=' + parseFloat($('maxafs').value);
+    q += '&coding=' + ($('coding').checked ? 1 : 0);
+
+    var data = [];
+    for (var chr in VCF)
+    {
+        var last = 0, chrbox = chr;
+        for (var pos in VCF[chr])
+        {
+            chrbox += '$' + (parseInt(pos - last)).toString(32);
+            chrbox += '@' + VCF[chr][pos];
+            last = pos;
+        }
+        data.push(chrbox);
+    }
+    q += '&vcf=' + (data.join('!'));
+
+    data = [];
+    for (var chr in BED)
+    {
+        var last = 0, chrbox = chr;
+        for (var i in BED[chr])
+        {
+            chrbox += '$' + (parseInt(BED[chr][i][0] - last)).toString(32);
+            chrbox += '@' + (parseInt(BED[chr][i][1] - BED[chr][i][0])).toString(32);
+            last = BED[chr][i][0];
+        }
+        data.push(chrbox);
+    }
+    q += '&bed=' + (data.join('!'));
+
+    Request('/upload', q, function(e){
+        Log('VCF info uploaded!');
+
+        var x = JSON.parse(e.target.response);
+        var counts = x[1];
+        key = x[0], global_key = x[0];
+
+        $('input').style.display  = 'none';
+        $('result').style.display = 'block';
+
+        tables = counts.map(function(count, i){
+            var t = $('t' + (++i));
+            t.page = 1;
+            t.count = count;
+            t.initial_count = count;
+            t.tbody = t.childNodes[3];
+            t.data = t.tbody.childNodes[1].childNodes[3];
+            t.load = function()
             {
-                var last = 0, chrbox = chr;
-                for (var pos in VCF[chr])
-                {
-                    chrbox += '$' + (parseInt(pos - last)).toString(32);
-                    chrbox += '@' + VCF[chr][pos];
-                    last = pos;
-                }
-                data.push(chrbox);
-            }
-            q += '&vcf=' + (data.join('!'));
+                $('ct' + i).innerHTML = t.count;
+                $('dl' + i).style.display  = t.count > 0 ? 'block' : 'none';
+                $('dl' + i).href = '/res/' + key + '.ts' + i;
+                t.maxpages = Math.floor(t.count/onpage) + 1;
 
-            data = [];
-            for (var chr in BED)
-            {
-                var last = 0, chrbox = chr;
-                for (var i in BED[chr])
-                {
-                    chrbox += '$' + (parseInt(BED[chr][i][0] - last)).toString(32);
-                    chrbox += '@' + (parseInt(BED[chr][i][1] - BED[chr][i][0])).toString(32);
-                    last = BED[chr][i][0];
-                }
-                data.push(chrbox);
-            }
-            q += '&bed=' + (data.join('!'));
+                var p = (t.page - 1) + '';
+                if (p.length == 2) p = '0'  + p;
+                if (p.length == 1) p = '00' + p;
 
-            Request('/upload', q, function(e){
-                Log('VCF info uploaded!');
-
-                var x = JSON.parse(e.target.response);
-                var counts = x[1];
-                key = x[0], global_key = x[0];
-
-                $('input').style.display  = 'none';
-                $('result').style.display = 'block';
-
-                tables = counts.map(function(count, i){
-                    var t = $('t' + (++i));
-                    t.page = 1;
-                    t.count = count;
-                    t.initial_count = count;
-                    t.tbody = t.childNodes[3];
-                    t.data = t.tbody.childNodes[1].childNodes[3];
-                    t.load = function()
-                    {
-                        $('ct' + i).innerHTML = t.count;
-                        $('dl' + i).style.display  = t.count > 0 ? 'block' : 'none';
-                        $('dl' + i).href = '/res/' + key + '.ts' + i;
-                        t.maxpages = Math.floor(t.count/onpage) + 1;
-
-                        var p = (t.page - 1) + '';
-                        if (p.length == 2) p = '0'  + p;
-                        if (p.length == 1) p = '00' + p;
-
-                        Request('/res/' + key + '.ts' + i + '.p' + p, '', function(e){
-                            var x = e.target.response.split('\n').map(function(line){
-                                    if (line == '') return '';
-                                    var c = line.split(',');
-                                    if (c[4].substr(0,3) == '~rs' || c[4].substr(0,2) == 'rs') {
-                                        c[4] = Tpl('ncbi', { rs : c[4].replace('~', '').substr(2), h : c[4] });
-                                    }
-                                    if (c[2].length > 3) c[2] = c[2].length + 'bp';
-                                    if (c[3].length > 3) c[3] = c[3].length + 'bp';
-                                    c[14] = parseFloat(c[14]).toFixed(4);
-                                    c[15] = parseFloat(c[15]).toFixed(4);
-                                    c[16] = parseFloat(c[16]).toFixed(4);
-                                    c[7] = Pred(c[7]);
-                                    c[8] = Pred(c[8]);
-                                    c[9] = Pred(c[9]);
-                                    return Tpl('row', c);
-                                }).filter(function(e){
-                                    return e != '';
-                                });
-                            
-                            if (x.length != 0) {
-                                t.data.innerHTML = x.join('');
-                                t.content = x.length * 22 + 45 + 36 + 'px';
-                            } else {
-                                t.data.innerHTML = Tpl('row-empty', {});
-                                t.content = 70 + 45 + 36 + 'px';
-                            }
-                
-                            $('pgI' + i).innerHTML = t.page;
-                            $('pgC' + i).innerHTML = t.maxpages;
-                            if (t.opened) t.tbody.style.height = t.content;
-                        }, 'GET');
-                    };
-                    
-                    t.load();
-
-                    t.childNodes[1].addEventListener('click', function(e){
-                        if (!t.opened) {
-                            t.opened = true;
-                            t.classList.add('opened');
-                            t.load();
-                            t.tbody.style.height = t.content;
-                        } else {
-                            t.opened = false;
-                            t.classList.remove('opened');
-                            t.tbody.style.height = '0px';
+                Request('/res/' + key + '.ts' + i + '.p' + p, '', function(e){
+                    var x = e.target.response.split('\n').map(function(line){
+                        if (line == '') return '';
+                        var c = line.split(',');
+                        if (c[2].length > 3) c[2] = c[2].length + 'bp';
+                        if (c[3].length > 3) c[3] = c[3].length + 'bp';
+                        if (c[4].substr(0,3) == '~rs' || c[4].substr(0,2) == 'rs') {
+                            c[4] = Tpl('ncbi', { rs : c[4].replace('~', '').substr(2), h : c[4] });
                         }
+                        // RefAFs
+                        c[9]  = parseFloat(c[9] ).toFixed(4);
+                        c[10] = parseFloat(c[10]).toFixed(4);
+                        c[11] = parseFloat(c[11]).toFixed(4);
+                        // Predictions
+                        c[15] = Pred(c[15]);
+                        c[17] = Pred(c[17]);
+                        c[19] = Pred(c[19]);
+                        return Tpl('row', c);
+                    }).filter(function(e){
+                        return e != '';
                     });
 
-                    $('pgL' + i).addEventListener('click', function(e){
-                        t.page = 1;
-                        t.load();
-                    });
-                    $('pgl' + i).addEventListener('click', function(e){
-                        t.page--;
-                        if (t.page <= 0) t.page = 1;
-                        t.load();
-                    });
-                    $('pgr' + i).addEventListener('click', function(e){
-                        t.page++;
-                        if (t.page > t.maxpages) t.page = t.maxpages;
-                        t.load();
-                    });
-                    $('pgR' + i).addEventListener('click', function(e){
-                        t.page = t.maxpages;
-                        t.load();
-                    });
-                
-                    return t;
-                });
-                
+                    if (x.length != 0) {
+                        t.data.innerHTML = x.join('');
+                        t.content = x.length * 22 + 45 + 36 + 'px';
+                    } else {
+                        t.data.innerHTML = Tpl('row-empty', {});
+                        t.content = 70 + 45 + 36 + 'px';
+                    }
+
+                    $('pgI' + i).innerHTML = t.page;
+                    $('pgC' + i).innerHTML = t.maxpages;
+                    if (t.opened) t.tbody.style.height = t.content;
+                }, 'GET');
+            };
+            
+            t.load();
+
+            t.childNodes[1].addEventListener('click', function(e){
+                if (!t.opened) {
+                    t.opened = true;
+                    t.classList.add('opened');
+                    t.load();
+                    t.tbody.style.height = t.content;
+                } else {
+                    t.opened = false;
+                    t.classList.remove('opened');
+                    t.tbody.style.height = '0px';
+                }
             });
-        }, 1);
+
+            $('pgL' + i).addEventListener('click', function(e){
+                t.page = 1;
+                t.load();
+            });
+            $('pgl' + i).addEventListener('click', function(e){
+                t.page--;
+                if (t.page <= 0) t.page = 1;
+                t.load();
+            });
+            $('pgr' + i).addEventListener('click', function(e){
+                t.page++;
+                if (t.page > t.maxpages) t.page = t.maxpages;
+                t.load();
+            });
+            $('pgR' + i).addEventListener('click', function(e){
+                t.page = t.maxpages;
+                t.load();
+            });
+        
+            return t;
+        });
+        
     });
 });
 
