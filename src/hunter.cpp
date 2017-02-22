@@ -2,78 +2,81 @@
 #include <fstream>
 #include <unistd.h>
 #include <stdlib.h>
+#include <unordered_map>
 #include "hunter.h"
+
+/*
+ 
+g++ -Werror -Wall -std=c++11 src/hunter.cpp -o exec/hunter
+g++ -g -std=c++11 src/hunter.cpp -o exec/hunter
+ 
+time
+./exec/hunter \
+ public/data/test.xvcf public/data/test.xbed \
+ 0 0.5 public/res/test \
+ public/data/sdf.v2.csv public/data/sdf_plus_upd.v2.csv
+ 
+*/
+
+sdfline s;
 
 int main(int argc, char *argv[])
 {
     using namespace std;
     
-    string key = argv[1]; // filename
-    char * tpx = argv[2]; // coding/n
-    string sdf = argv[3]; // supplementary data file
-    string res = argv[4]; // base dir
-    double afs = strtod(argv[5], NULL); // max ref afs
-
-    ifstream sdfs(sdf);
-    container<vcfline> vcf_file("/tmp/" + key + ".xvcf");
-    container<bedline> bed_file("/tmp/" + key + ".xbed");
+    string xvcf = argv[1]; // .vcf (processed) filename
+    string xbed = argv[2]; // .bed (processed) filename
     
-    bool bed_loaded = (bed_file.total() > 0);
+    intervals bed(xbed);
+    vcfdata vcf(xvcf, 1000); // 1000 это декомпозиция для быстрого поиска
+    
+    string tpx = argv[3]; // ? only coding
+    string out = argv[5]; // output prefix
+    string sdf = argv[6]; // supplementary data file
+    string sec = argv[7]; // supplementary data file2
+    
+    double afs = strtod(argv[4], NULL); // max ref afs
+    
+    ofstream tbl1(out + ".t1");
+    ofstream tbl2(out + ".t2");
+    ofstream tbl3(out + ".t3");
+    ofstream tbl4(out + ".t4");
 
-    ofstream tbl1(res + key + ".t1");
-    ofstream tbl2(res + key + ".t2");
-    ofstream tbl3(res + key + ".t3");
-
-    sdfline s;
+    unordered_map<string, xarray<sdfline> *> second;
+    ifstream ssec(sec);
+    while (ssec >> s)
+    {
+        string key = s.e[0] + ":" + s.e[17] + ":" + s.e[18] + "->" + s.e[19];
+        auto search = second.find(key);
+        if (search == second.end()) second[key] = new xarray<sdfline>;
+        second[key]->append(s);
+    }
+    
+    ifstream sdfs(sdf);
     while (sdfs >> s)
     {
         // Только выбранный класс интересует нас (only coding? = 1)
         // tpx = '1','0'
-        if (s.chr == -1) continue;
+        if (s.chr == 0) continue;
         if (tpx[0] == '1' && s.e[20] == "NO") continue;
         if (s.maxafs > afs) continue;
 
         // Проверка, есть ли точка в интервалах BED
-        // Тут можно мою любимую корневую декомпозицию позже замутить для скорости
-        // или или ещё что похитрее, дерево отрезков, например (слишком много памяти отожрёт)
-        if (bed_loaded)
-        {
-            bool in_bed = false;
-            for (int p = 0; p < bed_file.chrx[s.chr].count; ++p)
-            {
-                if (s.pos < bed_file.chrx[s.chr].data[p].from) continue;
-                if (s.pos > bed_file.chrx[s.chr].data[p].to) continue;
-                in_bed = true;
-                continue;
-            }
-            if (!in_bed) continue;
-        }
-        
+        if (bed.exist && !bed.find(s.chr, s.pos)) continue;
+
         // Поиск в файле юзера
         // zygosity = ['X', '1/1', '0/1', '0/0', './1', './.'];
-        short int zyg = -1;
-        try
-        {
-            // Здесь можно ускорить
-            for (int p = 0; p < vcf_file.chrx[s.chr].count; ++p)
-            {
-                if (vcf_file.chrx[s.chr].data[p].pos != s.pos) continue;
-                if (vcf_file.chrx[s.chr].data[p].ref != s.e[2]) continue;
-                if (vcf_file.chrx[s.chr].data[p].alt != s.e[3]) continue;
-                zyg = vcf_file.chrx[s.chr].data[p].zyg;
-                break;
-            }
-        } catch (...){}
+        short int zyg = vcf.zyg(s);
         
-        // 1.
+        // 1. (1 таблица)
         // Что не находится в файле юзера сохраняется в список 1 c генотипом ./.
         if (zyg == -1)
         {
             s.e[21] = "./.";
             tbl1 << s;
         }
-
-        // 2.
+        
+        // 2. (1 таблица)
         // Что находится в файле юзера в зиготности 0/0
         // сохраняется в список 1 (изменяем зиготность 1/1, помечаем)
         if (zyg == 3)
@@ -82,31 +85,49 @@ int main(int argc, char *argv[])
             s.e[22] = "*";
             tbl1 << s;
         }
-
-        // 3.
+        
+        // 3. (1 таблица)
         // Что находится в файле юзера в зиготности 0/1
         // сохраняется в список 1 (оставляем зиготность 0/1)
         if (zyg == 2)
         {
             s.e[21] = "0/1";
             tbl1 << s;
+            // 3.1 (3,4 таблица)
+            // ...
+            // tblX << s.raw << "\n";
         }
-
-        // 4.
-        // Работаем со всторым файлом ...
+        
+        // 4. (2 таблица)
+        // Что находится в файле юзера в зиготности 1/1
+        // сохраняется в список 2 (оставляем зиготность 1/1)
+        if (zyg == 1)
+        {
+            s.e[21] = "1/1";
+            tbl2 << s;
+            // 4.1 (3,4 таблица)
+            string key = s.e[0] + ":" + s.e[1] + ":" + s.e[2] + "->" + s.e[3];
+            auto search = second.find(key);
+            if (search != second.end())
+            {
+                for (int xp = 0; xp < second[key]->count; ++xp)
+                {
+                    short int exist = vcf.zyg(second[key]->data[xp]);
+                    if (exist != -1)
+                    {
+                        if (second[key]->data[xp].e[20] == "0") tbl3 * second[key]->data[xp];
+                        if (second[key]->data[xp].e[20] == "1") tbl4 * second[key]->data[xp];
+                    }
+                }
+            }
+        }
     }
-    
+
     tbl1.close();
     tbl2.close();
     tbl3.close();
-
+    tbl4.close();
+    
     return 0;
 }
 
-/*
-
-g++ -Werror -Wall -std=c++11 src/hunter.cpp -o exec/hunter
-valgrind ./exec/hunter EFYKSHHXTP7Y3Z0K9 0
-g++ -g -std=c++11 src/hunter.cpp -o exec/hunter
-
-*/

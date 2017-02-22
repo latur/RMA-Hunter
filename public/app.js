@@ -52,65 +52,29 @@ var process_init = false;
 var onpage = 30;
 
 /* -------------------------------------------------------------------------- */
-$('result-tables').innerHTML += Tpl('table', {
+$('result-tables').innerHTML += Tpl('table12', {
     'id' : 1,
-    'header' : 'Important variants: ',
-    'desc' : 'Ut eget blandit risus. Fusce ex neque, commodo sit amet tempor quis, viverra quis arcu. In suscipit pharetra urna sed venenatis. Sed eget eleifend nisl. Quisque ut urna interdum, blandit arcu id, tristique quam. In laoreet justo velit, id mattis nunc efficitur ut. Maecenas sit amet cursus urna. Pellentesque sit amet dolor consectetur, tincidunt diam vel, mollis neque.'
+    'header' : 'Hidden important RMAs',
+    'desc' : 'This list contains set of RMA sites where the alternative (non-reference allele) is not found in your sample or found at a heterozygous state - hence, it is likely to harbor at least one mutant (reference) allele.'
 });
-
-$('result-tables').innerHTML += Tpl('table', {
+$('result-tables').innerHTML += Tpl('table12', {
     'id' : 2,
-    'header' : 'T2',
-    'desc' : 'Phasellus non risus nisi. Orci varius natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Pellentesque et ligula in ligula faucibus varius. Sed maximus arcu quis lorem interdum scelerisque. Quisque placerat dui velit, nec porttitor sapien faucibus vel.'
+    'header' : 'Boasting false positive RMA calls',
+    'desc' : 'This list contains a set of RMA sites at which the alternative allele was called in homozygous state. These positions are in fact represented by the normal allele and are not to be considered for subsequent analysis.'
 });
-$('result-tables').innerHTML += Tpl('table', {
+$('result-tables').innerHTML += Tpl('table34', {
     'id' : 3,
-    'header' : 'T3',
-    'desc' : 'Maecenas ac quam quis mi sollicitudin finibus non vitae lectus. Praesent facilisis lacinia tellus sit amet maximus. Morbi non laoreet nibh, nec interdum urna. Aliquam semper metus a metus egestas ornare. Duis faucibus odio ornare, sodales ante vitae, volutpat leo.'
+    'header' : 'Gained variants that are misclassified because of neighboring RMA',
+    'desc' : 'This list contains a set of nonsense or missense variants that are misannotated due to the presence of the RMA in the same codon. These positions are to be carefully studied to avoid misinterpretation of sequence variants.'
+});
+$('result-tables').innerHTML += Tpl('table34', {
+    'id' : 4,
+    'header' : 'Rescued variants that are misclassified because of neighboring RMA',
+    'desc' : 'This list contains a set of missense or samesense variants that are misannotated as nonsense or missense due to the presence of the RMA in the same codon. These positions are to be carefully studied to avoid misinterpretation of sequence variants.'
 });
 
-
-$('run').addEventListener('click', function(e) {
-    if (process_init) return ;
-    if (!Object.keys(VCF).length) return ;
-
-    process_init = true;
-
-    document.getElementsByClassName( 'main' )[0].classList.add('disable');
-    Log('Hunting. Please wait!');
-
-    var q = '';
-    q += 'maxafs=' + parseFloat($('maxafs').value);
-    q += '&coding=' + ($('coding').checked ? 1 : 0);
-
-    var data = [];
-    for (var chr in VCF)
-    {
-        var last = 0, chrbox = chr;
-        for (var pos in VCF[chr])
-        {
-            chrbox += '$' + (parseInt(pos - last)).toString(32);
-            chrbox += '@' + VCF[chr][pos];
-            last = pos;
-        }
-        data.push(chrbox);
-    }
-    q += '&vcf=' + (data.join('!'));
-
-    data = [];
-    for (var chr in BED)
-    {
-        var last = 0, chrbox = chr;
-        for (var i in BED[chr])
-        {
-            chrbox += '$' + (parseInt(BED[chr][i][0] - last)).toString(32);
-            chrbox += '@' + (parseInt(BED[chr][i][1] - BED[chr][i][0])).toString(32);
-            last = BED[chr][i][0];
-        }
-        data.push(chrbox);
-    }
-    q += '&bed=' + (data.join('!'));
-
+function Init(q)
+{
     Request('/upload', q, function(e){
         Log('VCF info uploaded!');
 
@@ -147,6 +111,10 @@ $('run').addEventListener('click', function(e) {
                         if (c[3].length > 3) c[3] = c[3].length + 'bp';
                         if (c[4].substr(0,3) == '~rs' || c[4].substr(0,2) == 'rs') {
                             c[4] = Tpl('ncbi', { rs : c[4].replace('~', '').substr(2), h : c[4] });
+                        }
+                        if (i > 2)
+                        {
+                            c[7] = [c[6], c[7]].join('</td><td>');
                         }
                         // RefAFs
                         c[9]  = parseFloat(c[9] ).toFixed(4);
@@ -211,8 +179,58 @@ $('run').addEventListener('click', function(e) {
         
             return t;
         });
-        
     });
+}
+
+
+$('run').addEventListener('click', function(e) {
+    if (process_init) return ;
+    if (!Object.keys(VCF).length) return ;
+
+    process_init = true;
+    document.getElementsByClassName( 'main' )[0].classList.add('disable');
+    Log('Hunting. Please wait!');
+
+    var q = '';
+    q += 'maxafs=' + parseFloat($('maxafs').value);
+    q += '&coding=' + ($('coding').checked ? 1 : 0);
+
+    var data = [];
+    for (var chr in VCF)
+    {
+        var last = 0, chrbox = chr;
+        for (var pos in VCF[chr])
+        {
+            chrbox += '$' + (parseInt(pos - last)).toString(32);
+            chrbox += '@' + VCF[chr][pos];
+            last = pos;
+        }
+        data.push(chrbox);
+    }
+    q += '&vcf=' + (data.join('!'));
+
+    data = [];
+    for (var chr in BED)
+    {
+        var last = 0, chrbox = chr;
+        for (var i in BED[chr])
+        {
+            chrbox += '$' + (parseInt(BED[chr][i][0] - last)).toString(32);
+            chrbox += '@' + (parseInt(BED[chr][i][1] - BED[chr][i][0])).toString(32);
+            last = BED[chr][i][0];
+        }
+        data.push(chrbox);
+    }
+    q += '&bed=' + (data.join('!'));
+    
+    Init(q)
+});
+
+$('prc_demo').addEventListener('click', function(e) {
+    process_init = true;
+    document.getElementsByClassName( 'main' )[0].classList.add('disable');
+    Log('Hunting (demo). Please wait!');
+    Init('coding=demo');
 });
 
 $('gset-open').addEventListener('click', function(e) {

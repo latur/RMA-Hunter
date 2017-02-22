@@ -28,10 +28,10 @@ app.use(parser.urlencoded({extended : true, limit: '500mb'}));
 /* -------------------------------------------------------------------------- */
 app.post('/upload', (req, res) => {
     // Демонстрашка
-    if (req.body.types == 'demo')
+    if (req.body.coding == 'demo')
     {
         setTimeout(function(){
-            res.send(JSON.stringify(['demo', [61,2,0]]));
+            res.send(JSON.stringify(['demo', [15,135,0,2]]));
         }, 2 * 1000);
         return ;
     }
@@ -48,8 +48,8 @@ app.post('/upload', (req, res) => {
 	var vcf = '';
 	vcf_str.split('!').map(function(chr_box){
 		var blocks = chr_box.split('$'), last = 0;
-		var chr = parseInt(blocks[0].replace('X', 23).replace('Y', 24))
-		if (chr == 0) return false;
+		var chr = parseInt(blocks[0].replace('X', 23).replace('Y', 24).replace('M', 25))
+		if (chr == 0 || isNaN(chr)) return false;
 		vcf[chr] = {};
 		blocks.splice(1).map(function(block){
 			var tmp = block.split('@');
@@ -65,8 +65,8 @@ app.post('/upload', (req, res) => {
 	var bed = '';
 	bed_str.split('!').map(function(chr_box){
 		var blocks = chr_box.split('$'), last = 0;
-		var chr = parseInt(blocks[0].replace('X', 23).replace('Y', 24))
-		if (chr == 0) return;
+		var chr = parseInt(blocks[0].replace('X', 23).replace('Y', 24).replace('M', 25))
+		if (chr == 0 || isNaN(chr)) return false;
 		bed[chr] = [];
 		blocks.splice(1).map(function(block){
 			var tmp = block.split('@');
