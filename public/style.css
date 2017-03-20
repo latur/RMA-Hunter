@@ -8,6 +8,7 @@ body {
     overflow-x: hidden;
     background: #f9f7ff;
 }
+
 h1 {
 	text-align: center;
 	font-weight: 100;
@@ -97,11 +98,11 @@ svg.next {
 .inf {
 	font-size: 12px;
 	padding: 7px 5px;
+	margin-right: -30px;
 }
 .log {
 	line-height: 20px;
 }
-
 
 .tables {
 	padding: 0 10px;
@@ -110,6 +111,16 @@ svg.next {
 	margin: auto;
     margin-bottom: 300px;
 }
+#t1, #t3 {
+    background: #ffb1b1;
+    border: 1px solid #ff8383;
+}
+#t2, #t4 {
+    background: rgba(44, 197, 0, 0.3);
+    border: 1px solid #31ce00;
+}
+    
+    
 table {
     border-collapse: collapse;
 	text-align: left;
@@ -122,8 +133,9 @@ table thead {
 table th {
     height: 22px;
 	vertical-align: bottom;
-	padding: 3px 8px;
+	padding: 10px 8px;
 	font-weight: 100;
+	line-height: 0;
 	border-bottom: 1px solid #eaeaea;
 }
 table th:not(:last-child) {
@@ -133,6 +145,7 @@ table .tr:hover {
 	background: #fff9dd;
 }
 table td {
+    line-height: 0;
 	position: relative;
 	height: 22px;
     padding: 2px 7px;
@@ -154,7 +167,7 @@ table td {
 	padding: 8px 12px;
 }
 .table .head .title {
-    margin-bottom: 5px;
+    line-height: 20px;
 }
 .table .head .desc {
     line-height: 18px;
@@ -193,8 +206,8 @@ table tr:hover .pr-score {
     padding: 0px 7px;
     line-height: 18px;
     font-size: 14px;
-    margin: 3px 22px 3px 0;
-    border: 1px solid #ffc882;
+    margin: 0px 22px 0px 0;
+    border: 1px solid #ffad44;
 }
 .table .open-pane {
 	right:7px;
