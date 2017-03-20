@@ -187,6 +187,8 @@ table td {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    height: 18px;
+    line-height: 18px;
 }
 .table .pr-score {
 	opacity: 0.5;

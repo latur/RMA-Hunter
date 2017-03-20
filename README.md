@@ -37,10 +37,10 @@ npm install forever -g
 ### Hunter
 
 ~~~
-git clone https://github.com/latur/RMAHunter.git ./
+git clone https://github.com/latur/RMA-Hunter.git ./
 npm install
-tar -zxvf SDF_S2.tar.gz
-
-chmod +x ./exec/*.sh
+gzip -d public/data/sdf_plus_upd.v2.csv.gz
+gzip -d public/data/sdf.v2.csv.gz
+chmod +x ./exec/*
 forever start ./exec/hunter.js 80
 ~~~
