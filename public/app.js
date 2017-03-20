@@ -54,23 +54,23 @@ var onpage = 30;
 /* -------------------------------------------------------------------------- */
 $('result-tables').innerHTML += Tpl('table12', {
     'id' : 1,
-    'header' : 'Hidden important RMAs',
-    'desc' : 'This list contains set of RMA sites where the alternative (non-reference allele) is not found in your sample or found at a heterozygous state - hence, it is likely to harbor at least one mutant (reference) allele.'
+    'header' : 'False negative RMAs',
+    'desc' : 'NB: this list is likely to include filtered and not covered sites; hence, provide a non-filtered VCF along with a BED file OR manually curate interesting positions!'
 });
 $('result-tables').innerHTML += Tpl('table12', {
     'id' : 2,
-    'header' : 'Boasting false positive RMA calls',
-    'desc' : 'This list contains a set of RMA sites at which the alternative allele was called in homozygous state. These positions are in fact represented by the normal allele and are not to be considered for subsequent analysis.'
+    'header' : 'False positive RMAs',
+    'desc' : ''
 });
 $('result-tables').innerHTML += Tpl('table34', {
     'id' : 3,
-    'header' : 'Gained variants that are misclassified because of neighboring RMA',
-    'desc' : 'This list contains a set of nonsense or missense variants that are misannotated due to the presence of the RMA in the same codon. These positions are to be carefully studied to avoid misinterpretation of sequence variants.'
+    'header' : 'Gained RMA-codon variants',
+    'desc' : ''
 });
 $('result-tables').innerHTML += Tpl('table34', {
     'id' : 4,
-    'header' : 'Rescued variants that are misclassified because of neighboring RMA',
-    'desc' : 'This list contains a set of missense or samesense variants that are misannotated as nonsense or missense due to the presence of the RMA in the same codon. These positions are to be carefully studied to avoid misinterpretation of sequence variants.'
+    'header' : 'Rescued RMA-codon variants',
+    'desc' : ''
 });
 
 function Init(q)
