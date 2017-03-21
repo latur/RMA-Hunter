@@ -9,12 +9,20 @@
  
 g++ -Werror -Wall -std=c++11 src/hunter.cpp -o exec/hunter
 g++ -g -std=c++11 src/hunter.cpp -o exec/hunter
- 
-time
-./exec/hunter \
+
+rm -f public/res/*
+cp public/data/test.xvcf /tmp/test.xvcf
+cp public/data/test.xbed /tmp/test.xbed
+
+
+
+sftp://192.168.1.37//home/mathilde/www/rma-hunter.cf/exec/app.sh
+
+
+time ./exec/hunter \
  public/data/test.xvcf public/data/test.xbed \
  0 0.5 public/res/test \
- public/data/sdf.v2.csv public/data/sdf_plus_upd.v2.csv
+ public/data/sdf.csv public/data/sdf_plus.csv
  
 */
 

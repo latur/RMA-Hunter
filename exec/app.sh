@@ -2,7 +2,7 @@
 key=$1
 coding=$2
 maxafs=$3
-./exec/hunter /tmp/$key.xvcf /tmp/$key.xbed "$coding" "$maxafs" public/res/$key public/data/sdf.v2.csv public/data/sdf_plus_upd.v2.csv
+./exec/hunter /tmp/$key.xvcf /tmp/$key.xbed "$coding" "$maxafs" public/res/$key public/data/sdf.csv public/data/sdf_plus.csv
 
 cd public/res/
 echo $(

@@ -173,7 +173,7 @@ struct sdfline
         {
             if (i == 8) out << ",";
             if (i == 11) out << ",,";
-            out << h.e[i] << (i == 22 ? "\n" : ",");
+            out << (i == 18 ? "1/1" : h.e[i]) << (i == 22 ? "\n" : ",");
         }
         return out;
     }

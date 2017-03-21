@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" ng-app="flat.auth">
 <head>
@@ -245,16 +246,16 @@
     <div class="input" id="input">
         <div class="hello">
             <p>This is RMA Hunter — a web-based tool to systematically analyze and correct reference minor alleles in variant calling data. 
-                The tool provides a complete list of all potentially interesting RMAs that are not called in the sample analyzed or found reference homo-/heterozygous, 
-                as well as all reference-synonymous variants called in the RMA loci. All variants are annotated with correct pathogenicity predictions and reference allele frequencies.</p>
+                The tool provides a complete list of all false-positive and false-negative RMAs, as well as same-codon variants that switch type due to the presence of RMA.
+                All variants are annotated with correct pathogenicity predictions and reference allele frequencies.</p>
             <p>To start, please upload your VCF file and (for exome sequencing or target sequencing assays) a BED-file containing enrichment intervals. 
                 To analyze only specific genes of interest, please enter a list of genes (separate with comma or a newline) in the box provided.</p>
             
             <p class="cc"><b>Downloads:</b><br/>
-            You may also download the complete RMA set in the form of VCF and CSV files: <a href="data/Supplementary_Data_Files.tar.gz">Supplementary_Data_Files.tar.gz</a></p>
+            You may also download the data files describing RMA and RMA-codon variants in the form of VCF and CSV files: <a href="/Data_Files.zip">Data_Files.zip</a></p>
             <p class="cc"><b>Please cite the tool as:</b><br/>
             Barbitoff Y.A., Bezdvornykh I.V., Serebryakova E.A., Glotov A.S., Glotov O.S. and Predeus A.V.<br/>
-            Systematic correction of reference minor alleles in clinical variant calling. (2016)</p>
+            Catching hidden variation: Systematic correction of reference minor alleles in clinical variant calling. (2017)</p>
         </div>
         <button id="prc_demo" class="animate shadow btn prc example">Run example</button>
         <div class="main">
