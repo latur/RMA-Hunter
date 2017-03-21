@@ -123,8 +123,8 @@ int main(int argc, char *argv[])
                     short int exist = vcf.zyg(second[key]->data[xp]);
                     if (exist != -1)
                     {
-                        if (second[key]->data[xp].e[20] == "0") tbl3 * second[key]->data[xp];
-                        if (second[key]->data[xp].e[20] == "1") tbl4 * second[key]->data[xp];
+                        if (second[key]->data[xp].e[20] == "1") tbl3 * second[key]->data[xp];
+                        if (second[key]->data[xp].e[20] == "0") tbl4 * second[key]->data[xp];
                     }
                 }
             }

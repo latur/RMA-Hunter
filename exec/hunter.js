@@ -31,7 +31,7 @@ app.post('/upload', (req, res) => {
     if (req.body.coding == 'demo')
     {
         setTimeout(function(){
-            res.send(JSON.stringify(['demo', [15,135,0,2]]));
+            res.send(JSON.stringify(['demo', [208,1328,2,3]]));
         }, 2 * 1000);
         return ;
     }

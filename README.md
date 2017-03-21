@@ -36,11 +36,25 @@ npm install forever -g
 
 ### Hunter
 
+#### Quick Start
+
 ~~~
 git clone https://github.com/latur/RMA-Hunter.git ./
 npm install
-gzip -d public/data/sdf_plus_upd.v2.csv.gz
-gzip -d public/data/sdf.v2.csv.gz
+gzip -d public/data/sdf_plus.csv.gz
+gzip -d public/data/sdf.csv.gz
 chmod +x ./exec/*
 forever start ./exec/hunter.js 80
+~~~
+
+#### Compile & make demo
+
+~~~
+# g++ -Werror -Wall -std=c++11 src/hunter.cpp -o exec/hunter
+g++ -g -std=c++11 src/hunter.cpp -o exec/hunter
+
+rm -rf public/res && mkdir public/res
+cp public/data/test.xvcf /tmp/demo.xvcf
+cp public/data/test.xbed /tmp/demo.xbed
+./exec/app.sh demo 1 0.1
 ~~~
