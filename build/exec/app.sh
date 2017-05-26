@@ -2,9 +2,11 @@
 key=$1
 coding=$2
 maxafs=$3
-./exec/hunter /tmp/$key.xvcf /tmp/$key.xbed "$coding" "$maxafs" public/res/$key public/data/sdf.csv public/data/sdf_plus.csv
+./build/exec/hunter /tmp/$key.xvcf /tmp/$key.xbed \
+ "$coding" "$maxafs" build/web/results/$key \
+ build/data/sdf.csv build/data/sdf_plus.csv
 
-cd public/res/
+cd build/web/results/
 echo $(
   for i in 1 2 3 4; do
     cat $key.t$i | sort | awk {'print $2'} > $key.ts$i
@@ -14,5 +16,5 @@ echo $(
   done
 )
 
-find ./E* -mtime +1 -delete
+# find ./E* -mtime +1 -delete
 # find ./public/res/E* -mtime -1 -delete

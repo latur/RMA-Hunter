@@ -5,27 +5,6 @@
 #include <unordered_map>
 #include "hunter.h"
 
-/*
- 
-g++ -Werror -Wall -std=c++11 src/hunter.cpp -o exec/hunter
-g++ -g -std=c++11 src/hunter.cpp -o exec/hunter
-
-rm -f public/res/*
-cp public/data/test.xvcf /tmp/test.xvcf
-cp public/data/test.xbed /tmp/test.xbed
-
-
-
-sftp://192.168.1.37//home/mathilde/www/rma-hunter.cf/exec/app.sh
-
-
-time ./exec/hunter \
- public/data/test.xvcf public/data/test.xbed \
- 0 0.5 public/res/test \
- public/data/sdf.csv public/data/sdf_plus.csv
- 
-*/
-
 sdfline s;
 
 int main(int argc, char *argv[])
@@ -67,7 +46,6 @@ int main(int argc, char *argv[])
         // tpx = '1','0'
         if (s.chr == 0) continue;
         if (tpx[0] == '1' && s.e[20] == "NO") continue;
-        if (s.maxafs > afs) continue;
 
         // Проверка, есть ли точка в интервалах BED
         if (bed.exist && !bed.find(s.chr, s.pos)) continue;
@@ -75,7 +53,33 @@ int main(int argc, char *argv[])
         // Поиск в файле юзера
         // zygosity = ['X', '1/1', '0/1', '0/0', './1', './.'];
         short int zyg = vcf.zyg(s);
-        
+
+        // 4. (2 таблица)
+        // Что находится в файле юзера в зиготности 1/1
+        // сохраняется в список 2 (оставляем зиготность 1/1)
+        if (zyg == 1)
+        {
+            s.e[21] = "1/1";
+            if (s.maxafs > afs) tbl2 << s;
+            // 4.1 (3,4 таблица)
+            string key = s.e[0] + ":" + s.e[1] + ":" + s.e[2] + "->" + s.e[3];
+            auto search = second.find(key);
+            if (search != second.end())
+            {
+                for (int xp = 0; xp < second[key]->count; ++xp)
+                {
+                    short int exist = vcf.zyg(second[key]->data[xp]);
+                    if (exist != -1)
+                    {
+                        if (second[key]->data[xp].e[20] == "1") tbl3 * second[key]->data[xp];
+                        if (second[key]->data[xp].e[20] == "0") tbl4 * second[key]->data[xp];
+                    }
+                }
+            }
+        }
+
+        if (s.maxafs > afs) continue;
+
         // 1. (1 таблица)
         // Что не находится в файле юзера сохраняется в список 1 c генотипом ./.
         if (zyg == -1)
@@ -106,29 +110,6 @@ int main(int argc, char *argv[])
             // tblX << s.raw << "\n";
         }
         
-        // 4. (2 таблица)
-        // Что находится в файле юзера в зиготности 1/1
-        // сохраняется в список 2 (оставляем зиготность 1/1)
-        if (zyg == 1)
-        {
-            s.e[21] = "1/1";
-            tbl2 << s;
-            // 4.1 (3,4 таблица)
-            string key = s.e[0] + ":" + s.e[1] + ":" + s.e[2] + "->" + s.e[3];
-            auto search = second.find(key);
-            if (search != second.end())
-            {
-                for (int xp = 0; xp < second[key]->count; ++xp)
-                {
-                    short int exist = vcf.zyg(second[key]->data[xp]);
-                    if (exist != -1)
-                    {
-                        if (second[key]->data[xp].e[20] == "1") tbl3 * second[key]->data[xp];
-                        if (second[key]->data[xp].e[20] == "0") tbl4 * second[key]->data[xp];
-                    }
-                }
-            }
-        }
     }
 
     tbl1.close();

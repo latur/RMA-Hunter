@@ -1,7 +1,7 @@
 # RMA Hunter
 
 [http://rmahunter.bioinf.me/](http://rmahunter.bioinf.me/)  
-[http://rma-hunter.cf:8915/](http://rma-hunter.cf:8915/)
+	[http://rma-hunter.cf:8915/](http://rma-hunter.cf:8915/)
 
 This is RMA Hunter — a web-based tool to systematically analyze and correct 
 reference minor alleles in variant calling data. The tool provides a complete 
@@ -22,39 +22,57 @@ and Predeus A.V.
 Systematic correction of reference minor alleles in clinical variant calling. 
 (2016)
 
+## Quick Start
+### How to install & run local version
 
-## Installation 
+~~~
+git clone https://github.com/latur/RMA-Hunter.git ./
+gzip -d build/data/sdf_plus.csv.gz build/data/sdf.csv.gz
+chmod +x build/exec/*
+# ...
+~~~
 
-### Node.JS, npm, forever
+## How to run web-based version
+
+Install Node.JS, npm, forever. Example (ubuntu):
 
 ~~~
 curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
 sudo apt install -y nodejs
 sudo apt install npm
 npm install forever -g
-~~~
-
-### Hunter
-
-#### Quick Start
-
-~~~
-git clone https://github.com/latur/RMA-Hunter.git ./
 npm install
-gzip -d public/data/sdf_plus.csv.gz
-gzip -d public/data/sdf.csv.gz
-chmod +x ./exec/*
-forever start ./exec/hunter.js 80
 ~~~
 
-#### Compile & make demo
+Starting the server on port `8915`
 
 ~~~
-# g++ -Werror -Wall -std=c++11 src/hunter.cpp -o exec/hunter
-g++ -g -std=c++11 src/hunter.cpp -o exec/hunter
+forever start ./build/web/hunter.js 8915
+~~~
 
-rm -rf public/res && mkdir public/res
-cp public/data/test.xvcf /tmp/demo.xvcf
-cp public/data/test.xbed /tmp/demo.xbed
-./exec/app.sh demo 1 0.1
+If file `build/data/sdf.csv` has been updated, you need to create a file with a list of genes for the web version:
+
+~~~
+echo "exports.e = {" $(
+  echo $(
+   cat build/data/sdf.csv | \
+    awk -F  "," {'print $6'} | sort | uniq | \
+    awk '{print "\""$1"\":true"}'
+  ) | sed 's/ /,/g'
+) "}" > build/web/genes.js
+~~~
+
+### How to build from sources
+
+~~~
+g++ -Werror -Wall -std=c++11 src/hunter.cpp -o build/exec/hunter # debug
+g++ -g -std=c++11 src/hunter.cpp -o build/exec/hunter # production
+
+# Delete temporary files
+rm -f build/web/results/*
+
+# Running on test files
+cp build/data/test.xvcf /tmp/demo.xvcf
+cp build/data/test.xbed /tmp/demo.xbed
+./build/exec/app.sh demo 1 0.1
 ~~~

@@ -7,22 +7,12 @@ const server  = require('http').createServer(app);
 const fs      = require('fs');
 const genes   = require('./genes.js').e;
 
-/*
-echo "exports.e = {" $(
-  echo $(
-   cat public/data/SDF_S2.csv | \
-    awk -F  "," {'print $6'} | sort | uniq | \
-    awk '{print "\""$1"\":true"}'
-  ) | sed 's/ /,/g'
-) "}" > exec/genes.js
-*/
-
 /* -------------------------------------------------------------------------- */
 
 var port = parseInt(process.argv[2]);
 server.listen(port);
 
-app.use(express.static('public'));
+app.use(express.static(__dirname));
 app.use(parser.urlencoded({extended : true, limit: '500mb'}));
 
 /* -------------------------------------------------------------------------- */
@@ -31,7 +21,7 @@ app.post('/upload', (req, res) => {
     if (req.body.coding == 'demo')
     {
         setTimeout(function(){
-            res.send(JSON.stringify(['demo', [208,1328,2,3]]));
+            res.send(JSON.stringify(['demo', [208,2378,7,9]]));
         }, 2 * 1000);
         return ;
     }
@@ -82,7 +72,7 @@ app.post('/upload', (req, res) => {
     fs.writeFileSync('/tmp/' + key + '.xbed', bed);
 
     // Обсчёт + разбиение на страницы
-    var argv = ['./exec/app.sh', key, coding, maxafs].join(' ');
+    var argv = ['../exec/app.sh', key, coding, maxafs].join(' ');
     exec(argv, function callback(error, stdout, stderr) {
         res.send(JSON.stringify([key, stdout.replace('\n', '').split(' ')]));
     });
@@ -98,7 +88,7 @@ app.post('/genes', (req, res) => {
 	}).join('|');
 
     var new_key = 'EG' + Math.random().toString(36).substring(2).toUpperCase();
-    var argv = ['./exec/filter.sh', key_src, '"' + gsx + '"', new_key].join(' ');
+    var argv = ['../exec/filter.sh', key_src, '"' + gsx + '"', new_key].join(' ');
     console.log(argv)
     exec(argv, function callback(error, stdout, stderr) {
         res.send(JSON.stringify([new_key, stdout.replace('\n', '').split(' ')]));

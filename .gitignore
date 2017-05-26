@@ -1,5 +1,4 @@
-node_modules/*
-public/data/Supplementary_Data_Files.tar.gz
-public/data/sdf.v2.csv
-public/res/E*
 _*
+node_modules/*
+build/data/*.csv
+build/web/results/*

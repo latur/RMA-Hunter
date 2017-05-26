@@ -96,14 +96,14 @@ function Init(q)
             {
                 $('ct' + i).innerHTML = t.count;
                 $('dl' + i).style.display  = t.count > 0 ? 'block' : 'none';
-                $('dl' + i).href = '/res/' + key + '.ts' + i;
+                $('dl' + i).href = '/results/' + key + '.ts' + i;
                 t.maxpages = Math.floor(t.count/onpage) + 1;
 
                 var p = (t.page - 1) + '';
                 if (p.length == 2) p = '0'  + p;
                 if (p.length == 1) p = '00' + p;
 
-                Request('/res/' + key + '.ts' + i + '.p' + p, '', function(e){
+                Request('/results/' + key + '.ts' + i + '.p' + p, '', function(e){
                     var x = e.target.response.split('\n').map(function(line){
                         if (line == '') return '';
                         var c = line.split(',');
