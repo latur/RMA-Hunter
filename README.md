@@ -1,9 +1,9 @@
 # RMA Hunter
 
+**This project was moved here → [https://github.com/bioinf/RMAhunter](https://github.com/bioinf/RMAhunter)**
+
 [http://rmahunter.bioinf.me/](http://rmahunter.bioinf.me/)  
 [http://rma-hunter.cf:8915](http://rma-hunter.cf:8915)  
-
-This project was moved here → [https://github.com/bioinf/RMAhunter](https://github.com/bioinf/RMAhunter)
 
 This is RMA Hunter — a web-based tool to systematically analyze and correct 
 reference minor alleles in variant calling data. The tool provides a complete 
