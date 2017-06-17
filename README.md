@@ -1,7 +1,9 @@
 # RMA Hunter
 
 [http://rmahunter.bioinf.me/](http://rmahunter.bioinf.me/)  
-	[http://rma-hunter.cf:8915/](http://rma-hunter.cf:8915/)
+[http://rma-hunter.cf:8915](http://rma-hunter.cf:8915)  
+
+This project was moved here → [https://github.com/bioinf/RMAhunter](https://github.com/bioinf/RMAhunter)
 
 This is RMA Hunter — a web-based tool to systematically analyze and correct 
 reference minor alleles in variant calling data. The tool provides a complete 
@@ -22,57 +24,77 @@ and Predeus A.V.
 Systematic correction of reference minor alleles in clinical variant calling. 
 (2016)
 
+
 ## Quick Start
+
 ### How to install & run local version
 
 ~~~
-git clone https://github.com/latur/RMA-Hunter.git ./
-gzip -d build/data/sdf_plus.csv.gz build/data/sdf.csv.gz
-chmod +x build/exec/*
-# ...
+git clone https://github.com/bioinf/RMAhunter.git && cd RMAhunter
+gzip -d data/RMA_Annotations_NoESP.csv.gz data/RMA_Neighbor_Variants_WithEffs.csv.gz
+chmod +x exec/*
 ~~~
 
-## How to run web-based version
+~~~
+Usage:
+  ./exec/hunter.py [input vcf-file] [Optional arguments]
+
+Optional arguments:
+  -f  Path to `input.vcf` file
+  -v  Show log [N or Y]. Default: Y
+  -c  Report coding only [N or Y]. Default: Y
+  -g  Analyze specific gene set [Comma separated list of genes]
+  -m  Allelic frequency cutoff. Default: 0.01
+  -o  Output dir name
+  -z  Show non-calls [N or Y]. Default: Y
+
+Examples:
+  ./exec/hunter.py input.vcf
+  ./exec/hunter.py -f input.vcf -c 0 -m 0.05 -o results
+  ./exec/hunter.py -f input.vcf -g TLX1NB,USP17L25,TCP11X2,SFRP1,CAP1
+~~~
+
+
+## How to start a server with a web-version
 
 Install Node.JS, npm, forever. Example (ubuntu):
 
 ~~~
 curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
-sudo apt install -y nodejs
-sudo apt install npm
+sudo apt install -y nodejs npm
 npm install forever -g
 npm install
 ~~~
 
-Starting the server on port `8915`
+Compress HTML, JS and CSS files  
 
 ~~~
-forever start ./build/web/hunter.js 8915
+./exec/build.py
 ~~~
 
-If file `build/data/sdf.csv` has been updated, you need to create a file with a list of genes for the web version:
+Make demo samples
+
+~~~
+gzip -d data/example.vcf.gz
+cp data/example.vcf /tmp/demo.xvcf && touch /tmp/demo.xbed
+./exec/app.sh demo Y N 0.01
+~~~
+
+Starting web-server on port `8915`
+
+~~~
+nodejs ./exec/hunter.js 8915 # for debug
+forever start ./exec/hunter.js 8915 # for production
+~~~
+
+If file `data/RMA_Annotations_NoESP.csv` has been updated, you need to create a file with a list of genes for the web version:
 
 ~~~
 echo "exports.e = {" $(
   echo $(
-   cat build/data/sdf.csv | \
+   cat data/RMA_Annotations_NoESP.csv | \
     awk -F  "," {'print $6'} | sort | uniq | \
     awk '{print "\""$1"\":true"}'
   ) | sed 's/ /,/g'
-) "}" > build/web/genes.js
-~~~
-
-### How to build from sources
-
-~~~
-g++ -Werror -Wall -std=c++11 src/hunter.cpp -o build/exec/hunter # debug
-g++ -g -std=c++11 src/hunter.cpp -o build/exec/hunter # production
-
-# Delete temporary files
-rm -f build/web/results/*
-
-# Running on test files
-cp build/data/test.xvcf /tmp/demo.xvcf
-cp build/data/test.xbed /tmp/demo.xbed
-./build/exec/app.sh demo 1 0.1
+) "}" > exec/genes.js
 ~~~
